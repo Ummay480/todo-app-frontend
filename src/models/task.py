@@ -6,6 +6,7 @@ from datetime import datetime
 
 # Type definitions
 TaskStatus = Literal["pending", "completed"]
+TaskPriority = Literal["Low", "Medium", "High", "Critical"]
 
 
 class Task(TypedDict):
@@ -15,6 +16,8 @@ class Task(TypedDict):
         id: Unique identifier for the task
         title: Description of what needs to be done
         status: Current state of the task (pending or completed)
+        priority: Priority level (Low, Medium, High, Critical)
+        due_date: Optional due date (YYYY-MM-DD format)
         category: Optional category for organization
         tags: Optional list of tags for flexible classification
         created_at: ISO timestamp of task creation
@@ -24,6 +27,8 @@ class Task(TypedDict):
     id: int
     title: str
     status: TaskStatus
+    priority: NotRequired[TaskPriority | None]
+    due_date: NotRequired[str | None]
     category: NotRequired[str | None]
     tags: NotRequired[list[str]]
     created_at: NotRequired[str]
@@ -82,6 +87,8 @@ def create_task(
     task_id: int,
     title: str,
     status: TaskStatus = "pending",
+    priority: TaskPriority | None = None,
+    due_date: str | None = None,
     category: str | None = None,
     tags: list[str] | None = None
 ) -> Task:
@@ -91,6 +98,8 @@ def create_task(
         task_id: Unique task identifier
         title: Task title
         status: Task status (default: pending)
+        priority: Priority level
+        due_date: Due date in YYYY-MM-DD format
         category: Optional category
         tags: Optional list of tags
 
@@ -102,6 +111,8 @@ def create_task(
         "id": task_id,
         "title": title,
         "status": status,
+        "priority": priority,
+        "due_date": due_date,
         "category": category,
         "tags": tags or [],
         "created_at": timestamp,

@@ -2,7 +2,7 @@
 
 from typing import Dict, Any, Optional
 from src.lib.storage import TaskStorage
-from src.models.task import Task, is_valid_title, create_task
+from src.models.task import Task, is_valid_title, create_task, TaskPriority
 
 
 class TaskService:
@@ -24,7 +24,9 @@ class TaskService:
         self,
         title: str,
         category: str | None = None,
-        tags: list[str] | None = None
+        tags: list[str] | None = None,
+        priority: TaskPriority | None = None,
+        due_date: str | None = None
     ) -> Dict[str, Any]:
         """Add a new task with the given title, category, and tags.
 
@@ -81,14 +83,16 @@ class TaskService:
                 f"A task with this title already exists (ID: {existing_id})"
             )
 
-        # Create new task with category and tags
+        # Create new task with all fields
         task_id = self._storage.generate_id()
         task = create_task(
             task_id=task_id,
             title=title,
             status="pending",
             category=category,
-            tags=tags
+            tags=tags,
+            priority=priority,
+            due_date=due_date
         )
 
         # Add to storage
