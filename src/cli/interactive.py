@@ -5,6 +5,7 @@ from typing import NoReturn
 from src.lib.storage import TaskStorage
 from src.services.task_service import TaskService
 from src.models.task import TaskPriority
+from src.cli.menu import select_from_list, prompt_text, prompt_list
 
 
 def print_header(title: str) -> None:
@@ -33,47 +34,33 @@ def print_menu() -> None:
     print()
 
 
-def prompt_input(prompt: str, optional: bool = False) -> str:
-    """Prompt for user input.
-
-    Args:
-        prompt: Prompt message
-        optional: Whether the input is optional
-
-    Returns:
-        User input string
-    """
-    suffix = " (optional)" if optional else ""
-    value = input(f"? {prompt}{suffix}: ").strip()
-    return value
-
-
 def interactive_add(storage: TaskStorage, service: TaskService) -> None:
     """Interactive task addition with prompts."""
     print_header("➕ ADD NEW TODO")
     print()
 
     # Required: Title
-    title = prompt_input("Enter todo title")
+    title = prompt_text("Enter todo title")
     if not title:
         print("❌ Title cannot be empty")
+        input("\nPress Enter to continue...")
         return
 
     # Optional: Priority
-    print("\n  Priority levels: Low, Medium, High, Critical")
-    priority_input = prompt_input("Select priority", optional=True)
+    priority_choices = ["Low", "Medium", "High", "Critical", "None (skip)"]
+    priority_choice = prompt_list("Select priority", priority_choices, default="Medium")
     priority: TaskPriority | None = None
-    if priority_input and priority_input in ["Low", "Medium", "High", "Critical"]:
-        priority = priority_input  # type: ignore
+    if priority_choice != "None (skip)":
+        priority = priority_choice  # type: ignore
 
     # Optional: Category
-    category = prompt_input("Enter category", optional=True) or None
+    category = prompt_text("Enter category", optional=True) or None
 
     # Optional: Due date
-    due_date = prompt_input("Enter due date (YYYY-MM-DD)", optional=True) or None
+    due_date = prompt_text("Enter due date (YYYY-MM-DD)", optional=True) or None
 
     # Optional: Tags
-    tags_input = prompt_input("Enter tags (comma-separated)", optional=True)
+    tags_input = prompt_text("Enter tags (comma-separated)", optional=True)
     tags = [t.strip() for t in tags_input.split(",") if t.strip()] if tags_input else None
 
     # Add task
@@ -92,6 +79,8 @@ def interactive_add(storage: TaskStorage, service: TaskService) -> None:
             print(f"  ⚠ {result['warning']}")
     else:
         print(f"\n❌ Error: {result['error']}")
+
+    input("\nPress Enter to continue...")
 
 
 def interactive_list(storage: TaskStorage) -> None:
@@ -186,8 +175,9 @@ def interactive_statistics(storage: TaskStorage) -> None:
 
 def interactive_filter_category(storage: TaskStorage) -> None:
     """Filter todos by category."""
-    category = prompt_input("Enter category to filter")
+    category = prompt_text("Enter category to filter")
     if not category:
+        input("\nPress Enter to continue...")
         return
 
     print_header(f"📁 FILTER: Category = {category}")
@@ -197,6 +187,7 @@ def interactive_filter_category(storage: TaskStorage) -> None:
 
     if not tasks:
         print(f"  No todos found in category '{category}'")
+        input("\nPress Enter to continue...")
         return
 
     for task in tasks:
@@ -206,12 +197,14 @@ def interactive_filter_category(storage: TaskStorage) -> None:
             print(f"       Tags: {', '.join(task['tags'])}")
 
     print(f"\n  Total: {len(tasks)} todos")
+    input("\nPress Enter to continue...")
 
 
 def interactive_filter_tags(storage: TaskStorage) -> None:
     """Filter todos by tag."""
-    tag = prompt_input("Enter tag to filter")
+    tag = prompt_text("Enter tag to filter")
     if not tag:
+        input("\nPress Enter to continue...")
         return
 
     print_header(f"🏷️ FILTER: Tag = {tag}")
@@ -221,6 +214,7 @@ def interactive_filter_tags(storage: TaskStorage) -> None:
 
     if not tasks:
         print(f"  No todos found with tag '{tag}'")
+        input("\nPress Enter to continue...")
         return
 
     for task in tasks:
@@ -229,12 +223,14 @@ def interactive_filter_tags(storage: TaskStorage) -> None:
         print(f"  {status_icon} [{task['id']}] {task['title']} | Category: {category}")
 
     print(f"\n  Total: {len(tasks)} todos")
+    input("\nPress Enter to continue...")
 
 
 def interactive_search(storage: TaskStorage) -> None:
     """Search todos by keyword."""
-    keyword = prompt_input("Enter search keyword")
+    keyword = prompt_text("Enter search keyword")
     if not keyword:
+        input("\nPress Enter to continue...")
         return
 
     print_header(f"🔍 SEARCH: \"{keyword}\"")
@@ -306,9 +302,9 @@ def interactive_main() -> NoReturn:
         elif choice == "6" or choice == "filter" or choice == "filters":
             print_header("🔧 ADVANCED FILTERS")
             print()
-            status = prompt_input("Filter by status (pending/completed)", optional=True) or None
-            category = prompt_input("Filter by category", optional=True) or None
-            tag = prompt_input("Filter by tag", optional=True) or None
+            status = prompt_text("Filter by status (pending/completed)", optional=True) or None
+            category = prompt_text("Filter by category", optional=True) or None
+            tag = prompt_text("Filter by tag", optional=True) or None
 
             if status or category or tag:
                 tasks = storage.filter_tasks(status=status, category=category, tag=tag)
@@ -320,7 +316,7 @@ def interactive_main() -> NoReturn:
                 print("  No filters applied")
 
         elif choice == "7" or choice == "complete":
-            task_id = prompt_input("Enter task ID to complete")
+            task_id = prompt_text("Enter task ID to complete")
             if task_id.isdigit():
                 task = storage.get_task_by_id(int(task_id))
                 if task:
@@ -330,11 +326,11 @@ def interactive_main() -> NoReturn:
                     print(f"\n❌ Task {task_id} not found")
 
         elif choice == "8" or choice == "update":
-            task_id = prompt_input("Enter task ID to update")
+            task_id = prompt_text("Enter task ID to update")
             if task_id.isdigit():
                 task = storage.get_task_by_id(int(task_id))
                 if task:
-                    new_title = prompt_input("Enter new title")
+                    new_title = prompt_text("Enter new title")
                     if new_title:
                         storage.update_task(int(task_id), title=new_title)
                         print(f"\n✅ Task {task_id} updated")
@@ -342,7 +338,7 @@ def interactive_main() -> NoReturn:
                     print(f"\n❌ Task {task_id} not found")
 
         elif choice == "9" or choice == "delete":
-            task_id = prompt_input("Enter task ID to delete")
+            task_id = prompt_text("Enter task ID to delete")
             if task_id.isdigit():
                 task = storage.get_task_by_id(int(task_id))
                 if task:
