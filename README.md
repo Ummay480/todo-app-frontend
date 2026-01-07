@@ -9,10 +9,10 @@ A modern, responsive web frontend for the Todo App.
 - **Icons**: Lucide React
 
 ## Getting Started
-\`\`\`bash
+```bash
 npm install
 npm run dev
-\`\`\`
+```
 
 ---
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
