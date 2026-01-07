@@ -4,6 +4,7 @@ node_modules/
 .env.local
 .env.production
 .env.local.example
+.env
 .DS_Store
 *.log
 dist/
@@ -55,12 +56,13 @@ lerna-debug.log*
 !.env.test
 !.env.test.local
 .out
-out/
-.export
+.out/**
+!.out/cache/
+!.out/cache/**/*
 build/
 dist/
 public/dist/
-.next
+.out
 .cache/
 coverage/
 .nyc_output/
